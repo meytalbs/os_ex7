@@ -1,16 +1,3 @@
-/* 
-==============================================================================
-Written by : Meytal Abrahamian  login : meytalben  id : 211369939
-			 Tomer Akrish               tomerak         315224295
-==============================================================================
-This program use threads to create array of prime with ARR_SIZE cell.
-Its have a main thread that define the array and create MANU_NUM threads
-that each one of them create a prime number and add it to array.
-
-The first cell of array used for lock cell which means that if it holds 0 
-its lock and if it holds 1 its open. that way we make sure that the threads
-will not insert data to array together.
-*/
 
 // --------------------------------includes------------------------------------
 #include <pthread.h>
