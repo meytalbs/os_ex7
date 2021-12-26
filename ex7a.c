@@ -28,9 +28,10 @@ will not insert data to array together.
 #define OPEN_CELL 1				// to unlock first cell of prime array
 #define SRAND_NUM 17			// for number in srand
 #define MIN_PRIME 2				// for min prime 
+#define MAX_PRIME 997			// for max prime
 
 int prime_arr[ARR_SIZE];		// the prime array
-int index = 0;					// for next free index in prime array
+int next_index = 0;					// for next free index in prime array
 
 // ----------------------------------------------------------------------------
 void array_owner();
@@ -39,8 +40,8 @@ int get_prime();
 int is_prime(int number);
 void print_info();
 void map_prime_arr(int* new_primes, int* min_prime, int* max_prime);
-int is_in_prime_arr(int num);
 int count_frequency(int num);
+int is_in_arr(int arr[], int num);
 // ----------------------------------------------------------------------------
 
 // ---------------------------------main---------------------------------------
@@ -79,7 +80,7 @@ void array_owner()
 	}
 
 	// open lock cell
-	++index;
+	++next_index;
 	prime_arr[0] = OPEN_CELL;
 
 	// wait for all manufacturers threads
@@ -103,23 +104,27 @@ void* create_primes(void* args)
 		freq;						// for curr frequency 
 
 	// main loop
-	while (index != ARR_SIZE)
+	while (next_index < ARR_SIZE)
 	{
 		// get prime
 		num = get_prime();
-
+		if (num == 0)
+		{
+			printf("num; %d\n", num);
+		}
 		// while first cell is lock
 		while (prime_arr[0] == CLOSE_CELL);
 
 		// close locke cell insert num to array
-		prime_arr[0] == CLOSE_CELL;
-		prime_arr[index] = num;
+		prime_arr[0] = CLOSE_CELL;
+		prime_arr[next_index] = num;
 
 		// chack info about num
-		if (!is_in_prime_arr(num))
+		freq = count_frequency(num);
+		
+		if (freq == 0)
 			++new_primes;
 
-		freq = count_frequency(num);
 		if (freq > max_freq)
 		{
 			max_freq = freq;
@@ -127,13 +132,15 @@ void* create_primes(void* args)
 		}
 
 		// increase index and open lock cell
-		++index;
-		prime_arr[0] == OPEN_CELL;
+		++next_index;
+		prime_arr[0] = OPEN_CELL;
+		
 	}
 
 	// print info about curr manufacturer
 	printf("The amount of new primes I added to the array: %d\n", new_primes);
-	printf("The number with the highest frequency is: %d\n", max_prime_freq);
+	printf("The number with the highest frequency is: %d\n\n", max_prime_freq);
+	prime_arr[0] = OPEN_CELL;
 
 	pthread_exit(NULL);
 }
@@ -171,9 +178,9 @@ int is_prime(int number)
 // print array prime info
 void print_info()
 {
-	int new_primes = 0,
-		min_prime = 1000,
-		max_prime = 0;
+	int new_primes = 0,				// for new primes
+		min_prime = MAX_PRIME,		// for min prime
+		max_prime = MIN_PRIME;		// for max prime
 
 	map_prime_arr(&new_primes, &min_prime, &max_prime);
 
@@ -185,34 +192,39 @@ void print_info()
 // ----------------------------------------------------------------------------
 
 // map array prime and update value of: new_prines, min_prime and max_prime
-void map_prime_arr(int* new_primes, int* min_prime, int* max_prime)							//********************************
+void map_prime_arr(int* new_primes, int* min_prime, int* max_prime)							
 {
-	int i;			// for loop
+	int i,				// for loop
+		arr[ARR_SIZE];	// helping arr
 
 	for (i = 0; i < ARR_SIZE; ++i)
+		arr[i] = 0;
+
+	for (i = 1; i < ARR_SIZE; ++i)
 	{
-		if (!is_in_arr(prime_arr[i]))
-		{
+		if (!is_in_arr(arr, prime_arr[i]))
 			++(*new_primes);
-			if (prime_arr[i] > (*max_prime))
-				(*max_prime) = prime_arr[i];
-			else if (prime_arr[i] > (*min_prime))
-				(*min_prime) = prime_arr[i];
-		}
+		if (prime_arr[i] > (*max_prime))
+			(*max_prime) = prime_arr[i];
+		else if (prime_arr[i] < (*min_prime) && prime_arr[i] != 0)
+			(*min_prime) = prime_arr[i];
 	}
 }
 // ----------------------------------------------------------------------------
 
-// returns if num is inside prime array or not
-int is_in_prime_arr(int num)
+// returns if num is in arr
+int is_in_arr(int arr[], int num)
 {
-	int i;			// for loop
+	int i;		// for loop
 
-	for (i = 0; i < index; ++i)
-		if (prime_arr[i] == num)
-			return 0;
+	for (i = 0; i < ARR_SIZE && arr[i] != 0; ++i)
+	{
+		if (arr[i] == num)
+			return 1;
+	}
 
-	return 1;
+	arr[i] = num;
+	return 0;
 }
 // ----------------------------------------------------------------------------
 
@@ -222,7 +234,7 @@ int count_frequency(int num)
 	int i,					// for loop
 		counter = 0;		// to count frequency
 
-	for (i = 0; i < index; ++i)
+	for (i = 1; i < next_index && i < ARR_SIZE; ++i)
 		if (prime_arr[i] == num)
 			++counter;
 
