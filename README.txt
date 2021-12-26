@@ -28,3 +28,10 @@ compile: gcc -Wall ex7a.c -o ex7a -l pthread
 run: ./ex7a
 
 Run mode:
+To purchase the lock the process performs 2 operations:
+1. Check the value of the lock
+2. Update its value
+Therefore, there is a race mode where 2 processes have accepted that the lock
+is open at the same time so both will lock it and change the array of the prime
+numbers however the change of only one of them will absorb 
+(and it will override the change made by the other)
